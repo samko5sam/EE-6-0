@@ -12,24 +12,30 @@ var config = {
   mode: ""
 };
 let dictionaryConfigPanelTextInput_Html = `
-<div class="input-group">
-<input type="text" class="form-control form-control-lg dictionary-config-panel-text-input" aria-label="enter dictionary search url">
-<button type="button" class="remove-field-button btn btn-secondary"><i class="bi bi-x-circle"></i></button>
+<div class="input-group p-3">
+<input type="text" autocomplete="off" class="form-control form-control-lg dictionary-config-panel-text-input" aria-label="enter dictionary search url">
+<button type="button" class="remove-field-button btn btn-outline-secondary"><i class="bi bi-x-circle"></i></button>
 </div>
 `;
 let dictionaryNumber;
-let dictionaryLimit = 8;
+let dictionaryLimit = 15;
 let myhistory;
+let keylist = ["config","dictionaryList"];
 
 let dictionaryConfigPanel = document.querySelector(".dictionary-config-panel");
 let checkLocalstorageButton = document.querySelector(".check-localstorage-button");
 let addFieldButton = document.querySelector(".add-field-button");
 let saveDictionaryButton = document.querySelector(".save-dictionary");
 let dictionaryConfigPanelInput = document.querySelectorAll(".dictionary-config-panel-text-input");
+let toastBody = document.querySelector(".toast-body");
+let checkLocalStorageDialogModalHtml = document.querySelector(".check-local-storage-dialog-modal-html");
+let exportDictionaryConfigButton = document.querySelector(".export-dictionary-config-button");
+let importDictionaryConfigButton = document.querySelector(".import-dictionary-config-button");
 
-var dictionaryConfigPanelModal = new bootstrap.Modal(document.getElementById('dictionary-config-panel-modal'), {
-  keyboard: false
-});
+let dictionaryConfigPanelModal = new bootstrap.Modal(document.getElementById('dictionary-config-panel-modal'), {keyboard: false});
+let checkLocalStorageDialogModal = new bootstrap.Modal(document.getElementById('check-local-storage-dialog-modal'));
+let importDictionaryConfigDialogModal = new bootstrap.Modal(document.getElementById('import-dictionary-config-dialog-modal'));
+let mytoast = new bootstrap.Toast(document.querySelector(".toast"));
 
 // addEventListener
 document.addEventListener("DOMContentLoaded",domcontentloaded);
@@ -37,10 +43,11 @@ checkLocalstorageButton.addEventListener("click",clickButton);
 dictionaryConfigPanel.addEventListener("click",clickButton);
 addFieldButton.addEventListener("click",clickButton);
 saveDictionaryButton.addEventListener("click",clickButton);
+exportDictionaryConfigButton.addEventListener("click",clickButton);
+importDictionaryConfigButton.addEventListener("click",clickButton);
 
 //流程
 function domcontentloaded() {
-  checkAllLocalStorage("n");
   createDictionaryConfigPanel();
 }
 // localStorage
@@ -54,20 +61,21 @@ function checkLocalStorage(key) {
   }
   return x;
 }
-function checkAllLocalStorage(log) {
-  let keylist = ["config","dictionaryList"];
+function checkAllLocalStorage() {
+  let htmlcontent = "";
+  let x;
   for (var i = 0; i < keylist.length; i++) {
-    let x = checkLocalStorage(keylist[i]);
-    if (!log || log === "y") {
-      console.log("-----");
-      console.log(keylist[i]+":");
-      if (! x.length === 0) {
-        console.log(x);
-      } else {
-        console.log("未設定");
-      }
+    x = checkLocalStorage(keylist[i]);
+    htmlcontent += keylist[i]+" : ";
+    if (x.length !== 0) {
+      htmlcontent += x.toString();
+    } else {
+      htmlcontent += "未設定";
     }
+    htmlcontent += "<hr>";
   }
+  checkLocalStorageDialogModalHtml.innerHTML = htmlcontent;
+  checkLocalStorageDialogModal.show();
 }
 function saveLocalStorage(key,additem) {
   if (additem) {
@@ -82,7 +90,7 @@ function removeLocalItem(key,removeitem) {
     x.splice(x.indexOf(removeitem),1);
     localStorage.setItem(key,JSON.stringify(x));
   } else {
-    localStorage.setItem(key,JSON.stringify([]));
+    localStorage.clear();
   }
 }
 function getLocalItem(key) {
@@ -131,6 +139,10 @@ function clickButton(e) {
   } else if (buttonclass === "save-dictionary") {
     let x = dictionaryInput();
     saveDictionaryAction(x);
+  } else if (buttonclass === "import-dictionary-config-button") {
+    importDictionaryConfig();
+  } else if (buttonclass === "export-dictionary-config-button") {
+    exportDictionaryConfig();
   }
 }
 function dictionaryInput() {
@@ -144,6 +156,8 @@ function dictionaryInput() {
 function saveDictionaryAction(myjson) {
   let x = myjson;
   localStorage.setItem("dictionaryList",JSON.stringify(x));
+  showBootstrapToastAlert("已儲存");
+  dictionaryConfigPanelModal.hide();
 }
 function createDictionaryConfigPanel() {
   let x = checkLocalStorage("dictionaryList");
@@ -160,4 +174,16 @@ function createDictionaryConfigPanel() {
     dictionaryConfigPanel.innerHTML += dictionaryConfigPanelTextInput_Html;
     dictionaryNumber = 1;
   }
+}
+function showBootstrapToastAlert(message) {
+  if (message) {
+    toastBody.innerText = message;
+  }
+  mytoast.show();
+}
+function importDictionaryConfig() {
+  importDictionaryConfigDialogModal.show();
+}
+function exportDictionaryConfig() {
+
 }
