@@ -24,6 +24,7 @@ let myhistory;
 let dictionaryConfigPanel = document.querySelector(".dictionary-config-panel");
 let checkLocalstorageButton = document.querySelector(".check-localstorage-button");
 let addFieldButton = document.querySelector(".add-field-button");
+let saveDictionaryButton = document.querySelector(".save-dictionary");
 let dictionaryConfigPanelInput = document.querySelectorAll(".dictionary-config-panel-text-input");
 
 var dictionaryConfigPanelModal = new bootstrap.Modal(document.getElementById('dictionary-config-panel-modal'), {
@@ -35,6 +36,7 @@ document.addEventListener("DOMContentLoaded",domcontentloaded);
 checkLocalstorageButton.addEventListener("click",clickButton);
 dictionaryConfigPanel.addEventListener("click",clickButton);
 addFieldButton.addEventListener("click",clickButton);
+saveDictionaryButton.addEventListener("click",clickButton);
 
 //流程
 function domcontentloaded() {
@@ -53,7 +55,7 @@ function checkLocalStorage(key) {
   return x;
 }
 function checkAllLocalStorage(log) {
-  let keylist = ["config","dictionary"];
+  let keylist = ["config","dictionaryList"];
   for (var i = 0; i < keylist.length; i++) {
     let x = checkLocalStorage(keylist[i]);
     if (!log || log === "y") {
@@ -89,16 +91,6 @@ function getLocalItem(key) {
   }
 }
 // function
-function createDictionaryConfigPanel() {
-  let x = checkLocalStorage("dictionary");
-  if (! x.length === 0) {
-    console.log(x);
-  } else {
-    console.log("未設定 dictionary");
-    dictionaryConfigPanel.innerHTML += dictionaryConfigPanelTextInput_Html;
-    dictionaryNumber = 1;
-  }
-}
 function addDictionaryConfigField() {
   myhistory = dictionaryInput();
   if (dictionaryNumber < dictionaryLimit && dictionaryNumber >= 0) {
@@ -136,6 +128,9 @@ function clickButton(e) {
     addDictionaryConfigField();
   } else if (buttonclass === "remove-field-button") {
     removeDictionaryConfigField(e);
+  } else if (buttonclass === "save-dictionary") {
+    let x = dictionaryInput();
+    saveDictionaryAction(x);
   }
 }
 function dictionaryInput() {
@@ -145,4 +140,24 @@ function dictionaryInput() {
     inputvalues.push(dictionaryConfigPanelInput[i].value)
   }
   return inputvalues;
+}
+function saveDictionaryAction(myjson) {
+  let x = myjson;
+  localStorage.setItem("dictionaryList",JSON.stringify(x));
+}
+function createDictionaryConfigPanel() {
+  let x = checkLocalStorage("dictionaryList");
+  if (x.length !== 0) {
+    for (var i = 0; i < x.length; i++) {
+      dictionaryConfigPanel.innerHTML += dictionaryConfigPanelTextInput_Html;
+    }
+    dictionaryConfigPanelInput = document.querySelectorAll(".dictionary-config-panel-text-input");
+    for (var i = 0; i < x.length; i++) {
+      dictionaryConfigPanelInput[i].value = x[i];
+    }
+    dictionaryNumber = x.length;
+  } else {
+    dictionaryConfigPanel.innerHTML += dictionaryConfigPanelTextInput_Html;
+    dictionaryNumber = 1;
+  }
 }
