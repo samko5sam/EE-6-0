@@ -1,9 +1,16 @@
+'use strict';
+
 class toastAlert{
-  constructor(toastname,message){
+  constructor(toastname,message,position){
     this.name = toastname.toString();
     this.message = message.toString();
+    if (position === "top") {
+      this.position = "top";
+    } else {
+      this.position = "bottom";
+    }
     this.htmlContent = `
-    <div id="${this.name}" data-role-toast class="toast align-items-center text-white bg-primary border-0 position-absolute p-1 bottom-0 end-0" role="status" aria-live="polite" aria-atomic="true">
+    <div id="${this.name}" data-role-toast class="toast align-items-center text-white bg-primary border-0 position-absolute p-1 ${this.position}-0 end-0" role="status" aria-live="polite" aria-atomic="true">
       <div class="d-flex">
         <div data-role-toast-body class="toast-body">${this.message}</div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -39,11 +46,13 @@ class textModal{
 }
 
 const bodyContainer = document.querySelector('[data-role-container]');
+let buttons = document.querySelectorAll('.btn');
 
 document.addEventListener("DOMContentLoaded",loadPage);
 
 function loadPage(){
   generatePage();
+  buttons.forEach(addButtonClickEventListener);
 }
 function checkLocalStorage(key) {
   let x = key;
@@ -56,21 +65,42 @@ function checkLocalStorage(key) {
   return x;
 }
 function generatePage(){
-  bodyContainer.innerHTML = "";
   if (htmlContent_notification_content !== "" && checkLocalStorage("firstTime").toString() !== "no") {
     showTemporaryTextModal("Hello",htmlContent_modal_content+htmlContent_howToUse);
-    showTemporaryToastAlert(htmlContent_notification_content);
+    showTemporaryToastAlert(htmlContent_notification_content,false,"bottom");
     localStorage.setItem("firstTime",JSON.stringify(["no"]));
   }
 }
-function showTemporaryToastAlert(message){
-  const mytoastAlert_notification = new toastAlert("mytoastAlert_notification",message);
+function addButtonClickEventListener(item) {
+  let x = item.dataset.button;
+  if (x !== undefined && x !== "") {
+    item.addEventListener("click",myclickButton);
+  }
+}
+function myclickButton(e) {
+  let item = e.target;
+  let mydata = item.dataset.button;
+  if (mydata === "remove-first-time") {
+    localStorage.removeItem("firstTime");
+    showTemporaryToastAlert("removed",true,"top")
+  } else if (mydata === "reload-page"){
+    location.reload();
+  }
+}
+
+function showTemporaryToastAlert(message,toautohide,position){
+  const mytoastAlert_notification = new toastAlert("mytoastAlert_notification",message,position);
   bodyContainer.innerHTML += mytoastAlert_notification.htmlContent;
   const mytoastname = mytoastAlert_notification.name;
   let toast = document.querySelector(`#${mytoastname}`);
-  bootstraptoastAlert_notification = new bootstrap.Toast(toast,{autohide:false});
+  if (toautohide === "") {
+    toautohide = ture;
+  }
+  let bootstraptoastAlert_notification = new bootstrap.Toast(toast,{autohide:toautohide});
   toast.addEventListener('hidden.bs.toast', function () {
-    bootstraptoastAlert_notification.dispose();
+    toast.removeEventListener;
+    buttons = document.querySelectorAll('.btn');
+    buttons.forEach(addButtonClickEventListener);
     toast.remove();
   })
   bootstraptoastAlert_notification.show();
@@ -80,9 +110,11 @@ function showTemporaryTextModal(title,message){
   bodyContainer.innerHTML += myTextModal_notification.htmlContent;
   const myModalname = myTextModal_notification.name;
   let modal = document.querySelector(`#${myModalname}`);
-  bootstrapTextModal_notification = new bootstrap.Modal(modal,{keyboard: false});
+  let bootstrapTextModal_notification = new bootstrap.Modal(modal,{keyboard: false});
   modal.addEventListener('hidden.bs.modal', function () {
-    bootstrapTextModal_notification.dispose();
+    modal.removeEventListener;
+    buttons = document.querySelectorAll('.btn');
+    buttons.forEach(addButtonClickEventListener);
     modal.remove();
   })
   bootstrapTextModal_notification.show();

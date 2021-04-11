@@ -7,7 +7,8 @@ let htmlContent_modal_content = `
 `;
 let htmlContent_howToUse = `
 <h1>How To Use</h1>
-使用滑鼠操控
+使用滑鼠操控<br>
+<img src="https://alsonow.neocities.org/img/alsonow_icon.png" width="100%">
 `;
 let htmlContent_modalHtml_dictionaryConfig = `
 <!-- 字典設定modal -->
